@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RZ Engine F40 F120A Visual Tuner</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1e1e1e; color: #d4d4d4; margin: 0; padding: 20px; }
+        h2 { color: #ffffff; text-align: center; border-bottom: 2px solid #007acc; padding-bottom: 10px; }
+        .container { max-width: 1200px; margin: 0 auto; background: #252526; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .warning { background: #3a2a00; color: #ffcc00; padding: 15px; border-left: 4px solid #ffcc00; margin-bottom: 20px; border-radius: 4px; font-size: 0.95em; }
+        #plot { width: 100%; height: 600px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🏎️ RZ Studios™ F40 F120A Engine Tuner</h2>
+        <div class="warning">
+            <strong>⚠️ Tuning Discrepancy Alert:</strong> Your script comments claim 577 Nm (425 lb-ft) and 478 CV, but the torque curve peaks at ~238 lb-ft (~216 HP). 
+            Verify if the RZ Engine applies a hidden multiplier to these values, or if the curve needs scaling.
+        </div>
+        <div id="plot"></div>
+    </div>
+
+    <script>
+        // --- DATA FROM YOUR LUA SCRIPT ---
+        const rpm = [250, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 3800, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7250, 7500, 7750];
+        const torque = [44.72, 63.35, 85.71, 104.35, 121.97, 142.22, 170.52, 220.54, 238.44, 215.30, 220.52, 217.54, 211.58, 200.40, 189.22, 170.58, 147.85, 131.83, 114.68, 92.32];
+        
+        // Calculate HP: (Torque * RPM) / 5252
+        const hp = torque.map((t, i) => (t * rpm[i]) / 5252);
+
+        // Generate smooth Turbo Boost curve based on your settings:
+        // Idle: 1000 RPM (0 PSI), Peak: 3800 RPM (15.95 PSI), Curve: 2.20
+        const boostRpm = [];
+        const boostPsi = [];
+        for (let r = 1000; r <= 7750; r += 100) {
+            boostRpm.push(r);
+            if (r <= 1000) {
+                boostPsi.push(0);
+            } else if (r <= 3800) {
+                let nRpm = (r - 1000) / (3800 - 1000);
+                boostPsi.push(15.95 * Math.pow(nRpm, 2.20));
+            } else {
+                // Simple linear decay after peak for visualization
+                let decay = (r - 3800) * 0.0015;
+                boostPsi.push(Math.max(0, 15.95 - decay));
+            }
+        }
+
+        // --- PLOTLY CONFIGURATION ---
+        const traceTorque = {
+            x: rpm, y: torque, name: 'Torque (lb-ft)', type: 'scatter', mode: 'lines+markers',
+            line: { color: '#ff4d4d', width: 3 }, marker: { size: 6 }
+        };
+        const traceHP = {
+            x: rpm, y: hp, name: 'Horsepower (HP)', type: 'scatter', mode: 'lines+markers',
+            line: { color: '#4dff4d', width: 3, dash: 'dot' }, marker: { size: 6 }
+        };
+        const traceBoost = {
+            x: boostRpm, y: boostPsi, name: 'Turbo Boost (PSI)', type: 'scatter', mode: 'lines',
+            line: { color: '#4da6ff', width: 2, dash: 'dash' }, yaxis: 'y2'
+        };
+
+        const layout = {
+            title: 'Dyno Graph: Torque, Horsepower & Boost',
+            paper_bgcolor: '#252526', plot_bgcolor: '#1e1e1e',
+            font: { color: '#d4d4d4' },
+            xaxis: { title: 'Engine Speed (RPM)', gridcolor: '#333', range: [0, 8000] },
+            yaxis: { title: 'Torque (lb-ft) / Horsepower (HP)', gridcolor: '#333', range: [0, 300] },
+            yaxis2: { title: 'Boost (PSI)', overlaying: 'y', side: 'right', gridcolor: '#333', range: [0, 20], color: '#4da6ff' },
+            legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(0,0,0,0.5)' },
+            hovermode: 'x unified'
+        };
+
+        Plotly.newPlot('plot', [traceTorque, traceHP, traceBoost], layout, {responsive: true});
+    </script>
+</body>
+</html>
