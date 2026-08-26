@@ -3,84 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RZ Engine Tuner - F40 F120A</title>
+    <title>RZ Studios Tuning Suite</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1e1e1e; color: #d4d4d4; margin: 0; padding: 0; }
         
-        /* Navigation Bar Styles */
-        .navbar {
-            background-color: #252526;
-            border-bottom: 2px solid #007acc;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-        .nav-brand {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #ffffff;
-            letter-spacing: 1px;
-        }
-        .nav-links {
-            display: flex;
-            gap: 20px;
-        }
-        .nav-btn {
-            text-decoration: none;
-            color: #d4d4d4;
-            font-weight: 600;
-            padding: 8px 16px;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-            border: 1px solid transparent;
-        }
-        .nav-btn:hover {
-            background-color: #333333;
-            color: #ffffff;
-            border-color: #007acc;
-        }
-        .nav-btn.active {
-            background-color: #007acc;
-            color: #ffffff;
-        }
+        /* Navigation Bar */
+        .navbar { background-color: #252526; border-bottom: 2px solid #007acc; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .nav-brand { font-size: 1.5em; font-weight: bold; color: #ffffff; letter-spacing: 1px; }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-btn { text-decoration: none; color: #d4d4d4; font-weight: 600; padding: 8px 16px; border-radius: 4px; transition: all 0.3s ease; border: 1px solid transparent; cursor: pointer; background: none; font-size: 1em; }
+        .nav-btn:hover { background-color: #333333; color: #ffffff; border-color: #007acc; }
+        .nav-btn.active { background-color: #007acc; color: #ffffff; }
 
-        /* Main Content Styles */
-        .container { max-width: 1200px; margin: 30px auto; background: #252526; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        h2 { color: #ffffff; text-align: center; border-bottom: 1px solid #333; padding-bottom: 15px; margin-top: 0; }
+        /* Main Content */
+        .container { max-width: 1200px; margin: 30px auto; background: #252526; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h2 { color: #ffffff; border-bottom: 1px solid #333; padding-bottom: 15px; margin-top: 0; }
+        
+        /* Tab Content Visibility */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Suspension Tuner Layout */
+        .tuner-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .tuner-panel { background: #1e1e1e; padding: 20px; border-radius: 6px; border: 1px solid #333; }
+        .tuner-panel h3 { color: #007acc; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        
+        .slider-group { margin-bottom: 20px; }
+        .slider-group label { display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 5px; color: #cccccc; }
+        .slider-group input[type="range"] { width: 100%; cursor: pointer; accent-color: #007acc; }
+        .slider-value { color: #4dff4d; font-weight: bold; font-family: monospace; }
+
+        /* Code Output Box */
+        .code-output { grid-column: 1 / -1; margin-top: 20px; }
+        .code-output h3 { color: #4dff4d; margin-top: 0; }
+        textarea { width: 100%; height: 250px; background: #1e1e1e; color: #d4d4d4; border: 1px solid #333; border-radius: 4px; padding: 15px; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; resize: vertical; box-sizing: border-box; }
+        .copy-btn { background-color: #007acc; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: background 0.2s; }
+        .copy-btn:hover { background-color: #005a9e; }
+
+        /* Engine Graph */
         #plot { width: 100%; height: 600px; }
+
+        @media (max-width: 768px) { .tuner-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
     <!-- Navigation Bar -->
     <nav class="navbar">
-        <div class="nav-brand">🏎️ RZ Studios Tuner</div>
+        <div class="nav-brand">🏎️ RZ Studios Tuning Suite</div>
         <div class="nav-links">
-            <a href="#" class="nav-btn active">Engine</a>
-            <a href="#" class="nav-btn" onclick="alert('Suspension Tuner coming soon!')">Suspension</a>
-            <a href="#" class="nav-btn" onclick="alert('ABS & ESC Tuner coming soon!')">ABS / ESC</a>
-            <a href="#" class="nav-btn" onclick="alert('Car Preset Library coming soon!')">Car Presets</a>
+            <button class="nav-btn active" onclick="switchTab('engine')">Engine</button>
+            <button class="nav-btn" onclick="switchTab('suspension')">Suspension</button>
+            <button class="nav-btn" onclick="alert('ABS & ESC Tuner coming soon!')">ABS / ESC</button>
+            <button class="nav-btn" onclick="alert('Car Preset Library coming soon!')">Car Presets</button>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <div class="container">
+    <!-- ENGINE TAB -->
+    <div id="engine-tab" class="container tab-content active">
         <h2>F40 F120A Engine Dyno Graph</h2>
         <div id="plot"></div>
     </div>
 
+    <!-- SUSPENSION TAB -->
+    <div id="suspension-tab" class="container tab-content">
+        <h2>Suspension Tuner</h2>
+        <div class="tuner-grid">
+            
+            <!-- Front Suspension -->
+            <div class="tuner-panel">
+                <h3>Front Axle</h3>
+                <div class="slider-group">
+                    <label>Ride Height Offset (studs) <span id="val-front-rh" class="slider-value">0.00</span></label>
+                    <input type="range" id="front-rh" min="-0.10" max="0.10" step="0.01" value="0" oninput="updateSuspension()">
+                </div>
+                <div class="slider-group">
+                    <label>Spring Rate <span id="val-front-sr" class="slider-value">5.80</span></label>
+                    <input type="range" id="front-sr" min="2.0" max="15.0" step="0.1" value="5.8" oninput="updateSuspension()">
+                </div>
+                <div class="slider-group">
+                    <label>Low Speed Bump Damping <span id="val-front-lsb" class="slider-value">0.38</span></label>
+                    <input type="range" id="front-lsb" min="0.1" max="1.5" step="0.01" value="0.38" oninput="updateSuspension()">
+                </div>
+                <div class="slider-group">
+                    <label>Low Speed Rebound Damping <span id="val-front-lsr" class="slider-value">0.70</span></label>
+                    <input type="range" id="front-lsr" min="0.1" max="2.0" step="0.01" value="0.70" oninput="updateSuspension()">
+                </div>
+            </div>
+
+            <!-- Rear Suspension -->
+            <div class="tuner-panel">
+                <h3>Rear Axle</h3>
+                <div class="slider-group">
+                    <label>Ride Height Offset (studs) <span id="val-rear-rh" class="slider-value">0.00</span></label>
+                    <input type="range" id="rear-rh" min="-0.10" max="0.10" step="0.01" value="0" oninput="updateSuspension()">
+                </div>
+                <div class="slider-group">
+                    <label>Spring Rate <span id="val-rear-sr" class="slider-value">7.59</span></label>
+                    <input type="range" id="rear-sr" min="2.0" max="20.0" step="0.1" value="7.59" oninput="updateSuspension()">
+                </div>
+                <div class="slider-group">
+                    <label>Low Speed Bump Damping <span id="val-rear-lsb" class="slider-value">0.44</span></label>
+                    <input type="range" id="rear-lsb" min="0.1" max="1.5" step="0.01" value="0.44" oninput="updateSuspension()">
+                </div>
+                <div class="slider-group">
+                    <label>Low Speed Rebound Damping <span id="val-rear-lsr" class="slider-value">0.82</span></label>
+                    <input type="range" id="rear-lsr" min="0.1" max="2.0" step="0.01" value="0.82" oninput="updateSuspension()">
+                </div>
+            </div>
+
+            <!-- Anti-Roll Bars -->
+            <div class="tuner-panel" style="grid-column: 1 / -1;">
+                <h3>Anti-Roll Bars (Sway Bars)</h3>
+                <div class="tuner-grid" style="gap: 20px;">
+                    <div class="slider-group">
+                        <label>Front ARB Rate <span id="val-arb-f" class="slider-value">1.80</span></label>
+                        <input type="range" id="arb-f" min="0" max="5.0" step="0.1" value="1.8" oninput="updateSuspension()">
+                    </div>
+                    <div class="slider-group">
+                        <label>Rear ARB Rate <span id="val-arb-r" class="slider-value">0.00</span></label>
+                        <input type="range" id="arb-r" min="0" max="5.0" step="0.1" value="0" oninput="updateSuspension()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generated Code Output -->
+            <div class="tuner-panel code-output">
+                <h3>📋 Generated Lua Configuration</h3>
+                <textarea id="lua-output" readonly></textarea>
+                <button class="copy-btn" onclick="copyToClipboard()">Copy Lua to Clipboard</button>
+                <span id="copy-msg" style="margin-left: 15px; color: #4dff4d; display: none;">Copied successfully!</span>
+            </div>
+        </div.
+    </div>
+
     <script>
-        // --- DATA FROM YOUR LUA SCRIPT ---
+        // --- TAB SWITCHING LOGIC ---
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+
+            if(tabName === 'engine') {
+                Plotly.Plots.resize('plot'); // Fix graph rendering when hidden
+            }
+        }
+
+        // --- SUSPENSION TUNER LOGIC ---
+        function updateSuspension() {
+            // Get values from sliders
+            const f_rh = parseFloat(document.getElementById('front-rh').value);
+            const f_sr = parseFloat(document.getElementById('front-sr').value);
+            const f_lsb = parseFloat(document.getElementById('front-lsb').value);
+            const f_lsr = parseFloat(document.getElementById('front-lsr').value);
+
+            const r_rh = parseFloat(document.getElementById('rear-rh').value);
+            const r_sr = parseFloat(document.getElementById('rear-sr').value);
+            const r_lsb = parseFloat(document.getElementById('rear-lsb').value);
+            const r_lsr = parseFloat(document.getElementById('rear-lsr').value);
+
+            const arb_f = parseFloat(document.getElementById('arb-f').value);
+            const arb_r = parseFloat(document.getElementById('arb-r').value);
+
+            // Update display labels
+            document.getElementById('val-front-rh').textContent = f_rh.toFixed(2);
+            document.getElementById('val-front-sr').textContent = f_sr.toFixed(2);
+            document.getElementById('val-front-lsb').textContent = f_lsb.toFixed(2);
+            document.getElementById('val-front-lsr').textContent = f_lsr.toFixed(2);
+
+            document.getElementById('val-rear-rh').textContent = r_rh.toFixed(2);
+            document.getElementById('val-rear-sr').textContent = r_sr.toFixed(2);
+            document.getElementById('val-rear-lsb').textContent = r_lsb.toFixed(2);
+            document.getElementById('val-rear-lsr').textContent = r_lsr.toFixed(2);
+
+            document.getElementById('val-arb-f').textContent = arb_f.toFixed(2);
+            document.getElementById('val-arb-r').textContent = arb_r.toFixed(2);
+
+            // Generate Lua Code
+            const luaCode = `		--[[Front Suspension]]--
+		Suspension.Front = {
+			RideHeightOffset                = ${f_rh.toFixed(2)},
+			SpringRate                      = ${f_sr.toFixed(2)},
+			LowSpeedBump                    = ${f_lsb.toFixed(2)},
+			LowSpeedRebound                 = ${f_lsr.toFixed(2)},
+		}
+
+		--[[Rear Suspension]]--
+		Suspension.Rear = {
+			RideHeightOffset                = ${r_rh.toFixed(2)},
+			SpringRate                      = ${r_sr.toFixed(2)},
+			LowSpeedBump                    = ${r_lsb.toFixed(2)},
+			LowSpeedRebound                 = ${r_lsr.toFixed(2)},
+		}
+
+		--[[Anti-roll Bars]]--
+		Suspension.AntiRollBar = {
+			FrontRate						= ${arb_f.toFixed(2)},
+			RearRate						= ${arb_r.toFixed(2)},
+		}`;
+
+            document.getElementById('lua-output').value = luaCode;
+        }
+
+        function copyToClipboard() {
+            const copyText = document.getElementById("lua-output");
+            copyText.select();
+            document.execCommand("copy");
+            
+            const msg = document.getElementById("copy-msg");
+            msg.style.display = "inline";
+            setTimeout(() => { msg.style.display = "none"; }, 2000);
+        }
+
+        // --- ENGINE GRAPH LOGIC ---
         const rpm = [250, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 3800, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7250, 7500, 7750];
         const torque = [44.72, 63.35, 85.71, 104.35, 121.97, 142.22, 170.52, 220.54, 238.44, 215.30, 220.52, 217.54, 211.58, 200.40, 189.22, 170.58, 147.85, 131.83, 114.68, 92.32];
-        
-        // Calculate HP
         const hp = torque.map((t, i) => (t * rpm[i]) / 5252);
 
-        // --- PLOTLY CONFIGURATION ---
         const traceTorque = {
             x: rpm, y: torque, name: 'Torque (lb-ft)', type: 'scatter', mode: 'lines+markers',
             line: { color: '#ff4d4d', width: 3 }, marker: { size: 6 }
@@ -97,10 +239,14 @@
             xaxis: { title: 'Engine Speed (RPM)', gridcolor: '#333', range: [0, 8000] },
             yaxis: { title: 'Torque (lb-ft) / Horsepower (HP)', gridcolor: '#333', range: [0, 300] },
             legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(0,0,0,0.5)' },
-            hovermode: 'x unified'
+            hovermode: 'x unified',
+            margin: { t: 40, r: 20, l: 60, b: 50 }
         };
 
         Plotly.newPlot('plot', [traceTorque, traceHP], layout, {responsive: true});
+
+        // Initialize suspension code on load
+        updateSuspension();
     </script>
 </body>
 </html>
