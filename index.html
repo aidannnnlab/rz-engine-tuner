@@ -6,23 +6,81 @@
     <title>RZ Engine Tuner - F40 F120A</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1e1e1e; color: #d4d4d4; margin: 0; padding: 20px; }
-        h2 { color: #ffffff; text-align: center; border-bottom: 2px solid #007acc; padding-bottom: 10px; }
-        .container { max-width: 1200px; margin: 0 auto; background: #252526; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1e1e1e; color: #d4d4d4; margin: 0; padding: 0; }
+        
+        /* Navigation Bar Styles */
+        .navbar {
+            background-color: #252526;
+            border-bottom: 2px solid #007acc;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .nav-brand {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ffffff;
+            letter-spacing: 1px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        .nav-btn {
+            text-decoration: none;
+            color: #d4d4d4;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        .nav-btn:hover {
+            background-color: #333333;
+            color: #ffffff;
+            border-color: #007acc;
+        }
+        .nav-btn.active {
+            background-color: #007acc;
+            color: #ffffff;
+        }
+
+        /* Main Content Styles */
+        .container { max-width: 1200px; margin: 30px auto; background: #252526; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h2 { color: #ffffff; text-align: center; border-bottom: 1px solid #333; padding-bottom: 15px; margin-top: 0; }
         #plot { width: 100%; height: 600px; }
     </style>
 </head>
 <body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">🏎️ RZ Studios Tuner</div>
+        <div class="nav-links">
+            <a href="#" class="nav-btn active">Engine</a>
+            <a href="#" class="nav-btn" onclick="alert('Suspension Tuner coming soon!')">Suspension</a>
+            <a href="#" class="nav-btn" onclick="alert('ABS & ESC Tuner coming soon!')">ABS / ESC</a>
+            <a href="#" class="nav-btn" onclick="alert('Car Preset Library coming soon!')">Car Presets</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
     <div class="container">
-        <h2>🏎️ RZ Studios™ F40 F120A Engine Tuner</h2>
+        <h2>F40 F120A Engine Dyno Graph</h2>
         <div id="plot"></div>
     </div>
 
     <script>
+        // --- DATA FROM YOUR LUA SCRIPT ---
         const rpm = [250, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 3800, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7250, 7500, 7750];
         const torque = [44.72, 63.35, 85.71, 104.35, 121.97, 142.22, 170.52, 220.54, 238.44, 215.30, 220.52, 217.54, 211.58, 200.40, 189.22, 170.58, 147.85, 131.83, 114.68, 92.32];
+        
+        // Calculate HP
         const hp = torque.map((t, i) => (t * rpm[i]) / 5252);
 
+        // --- PLOTLY CONFIGURATION ---
         const traceTorque = {
             x: rpm, y: torque, name: 'Torque (lb-ft)', type: 'scatter', mode: 'lines+markers',
             line: { color: '#ff4d4d', width: 3 }, marker: { size: 6 }
